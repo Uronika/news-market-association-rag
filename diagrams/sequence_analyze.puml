@@ -1,0 +1,44 @@
+@startuml
+title 顺序图：一次分析请求的对象交互过程
+
+actor "课程展示用户" as User
+participant "WebUI" as Web
+participant "FastAPI" as API
+participant "ProgressStore" as Progress
+participant "RAGPipeline" as RAG
+participant "MarketSource" as Market
+participant "NewsSource" as News
+participant "LLMClient" as LLM
+participant "Guard" as Guard
+participant "PostgreSQL" as DB
+
+User -> Web : 输入问题并提交
+Web -> API : 启动分析任务
+API -> Progress : 创建任务
+API -> RAG : 执行分析流程
+API --> Web : 返回任务编号
+
+Web -> API : 查询分析进度
+API -> Progress : 读取任务状态
+Progress --> API : 返回进度信息
+API --> Web : 显示进度
+
+RAG -> Market : 获取行情数据
+Market --> RAG : 返回行情日线
+RAG -> News : 获取新闻数据
+News --> RAG : 返回新闻候选
+RAG -> DB : 保存新闻和行情
+
+RAG -> LLM : 提交新闻证据和行情摘要
+LLM --> RAG : 返回关联解释正文
+RAG -> Guard : 执行风险守卫
+Guard --> RAG : 返回安全后的 Answer
+RAG -> DB : 保存分析结果和引用
+RAG -> Progress : 写入完成状态和结果
+
+Web -> API : 获取分析结果
+API -> Progress : 读取任务结果
+Progress --> API : 返回 AnalyzeResponse
+API --> Web : 返回结构化结果
+Web --> User : 展示 Answer、可视化、图谱、评价和引用
+@enduml

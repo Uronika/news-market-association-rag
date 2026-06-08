@@ -1,0 +1,109 @@
+@startuml
+title 类图：核心类及其关系
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+
+class FastAPIApp {
+  +analyze_start(request)
+  +analyze_progress(job_id)
+  +analyze_result(job_id)
+  +llm_key_status()
+}
+
+class AnalyzeRequest {
+  +question: str
+  +ticker: str
+  +company_name: str
+  +deepseek_api_key: secret
+}
+
+class AnalyzeResponse {
+  +answer: str
+  +market_summary: dict
+  +news_summary: dict
+  +graph_summary: dict
+  +citations: list
+  +evaluation: dict
+  +risk_warnings: list
+}
+
+class RAGPipeline {
+  +run_analysis()
+  -infer_analysis_scope()
+  -filter_and_rank_articles()
+  -format_answer()
+}
+
+interface NewsSource {
+  +search_news()
+}
+
+interface MarketSource {
+  +get_prices()
+}
+
+class AnalyticsService {
+  +summarize_market()
+}
+
+class InsightService {
+  +build_reasoning_context()
+}
+
+class GraphService {
+  +build_graph_summary()
+}
+
+interface LLMClient {
+  +generate()
+}
+
+class Guard {
+  +apply_guard()
+}
+
+class ProgressStore {
+  +create_job()
+  +update_job()
+  +complete_job()
+  +get_result()
+}
+
+class DatabaseSession
+class MarketPrice
+class NewsArticle
+class Analysis
+class Citation
+
+FastAPIApp --> AnalyzeRequest
+FastAPIApp --> AnalyzeResponse
+FastAPIApp --> ProgressStore
+FastAPIApp --> RAGPipeline
+
+RAGPipeline --> NewsSource
+RAGPipeline --> MarketSource
+RAGPipeline --> AnalyticsService
+RAGPipeline --> InsightService
+RAGPipeline --> GraphService
+RAGPipeline --> LLMClient
+RAGPipeline --> Guard
+RAGPipeline --> DatabaseSession
+
+DatabaseSession --> MarketPrice
+DatabaseSession --> NewsArticle
+DatabaseSession --> Analysis
+DatabaseSession --> Citation
+AnalyzeResponse o-- Citation
+
+note right of RAGPipeline
+  核心编排类：
+  负责新闻检索、行情分析、
+  图谱增强、LLM 解释和结果组装。
+end note
+
+note bottom of Guard
+  风险守卫：
+  限制输出为 association_only，
+  不允许投资建议、目标价和确定性因果断言。
+end note
+@enduml

@@ -1,0 +1,39 @@
+@startuml
+title 用例图：系统功能边界、参与者及用例关系
+left to right direction
+skinparam shadowing false
+
+actor "课程展示用户" as User
+actor "新闻数据源" as News
+actor "行情数据源" as Market
+actor "DeepSeek LLM" as LLM
+actor "PostgreSQL 数据库" as DB
+
+rectangle "新闻舆情-行情异动关联解释型 RAG 系统" {
+  usecase "提交分析问题" as UC1
+  usecase "管理 DeepSeek API Key" as UC2
+  usecase "查看分析进度" as UC3
+  usecase "检索新闻与行情" as UC4
+  usecase "生成关联解释报告" as UC5
+  usecase "查看可视化结果" as UC6
+  usecase "查看引用、评价与风险提示" as UC7
+  usecase "缓存数据与分析结果" as UC8
+}
+
+User --> UC1
+User --> UC2
+User --> UC3
+User --> UC6
+User --> UC7
+
+UC1 --> UC4
+UC4 --> UC5
+UC5 --> UC6
+UC5 --> UC7
+UC5 --> UC8
+
+UC4 --> News
+UC4 --> Market
+UC5 --> LLM
+UC8 --> DB
+@enduml
